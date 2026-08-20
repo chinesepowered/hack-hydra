@@ -1,0 +1,89 @@
+{
+  "org": "Meridian Health",
+  "tagline": "Patient-care platform — 14 hospitals, 2.3M patient records",
+  "note": "Demo organization. Replace with your own services, or upload a package-lock.json in the console to compute your real exposure.",
+  "services": [
+    {
+      "name": "patient-portal-web",
+      "kind": "frontend",
+      "description": "Patient-facing portal: appointments, results, messaging",
+      "deps": ["react", "react-dom", "@tanstack/react-router", "@tanstack/react-query", "axios", "zod", "date-fns"],
+      "resolutions": [
+        { "name": "@tanstack/react-router", "version": "1.169.5", "resolved_at": "2026-05-11T21:47:00Z" },
+        { "name": "react", "version": "19.1.0", "resolved_at": "2026-05-11T21:47:00Z" },
+        { "name": "axios", "version": "1.9.0", "resolved_at": "2026-05-11T21:47:00Z" }
+      ]
+    },
+    {
+      "name": "scheduling-web",
+      "kind": "frontend",
+      "description": "Clinician scheduling and rota management",
+      "deps": ["react", "react-dom", "@tanstack/react-router", "date-fns", "zustand"],
+      "resolutions": [
+        { "name": "@tanstack/react-router", "version": "1.168.20", "resolved_at": "2026-04-30T08:15:00Z" }
+      ]
+    },
+    {
+      "name": "admin-console",
+      "kind": "frontend",
+      "description": "Angular back-office: user management, audit, reporting",
+      "deps": ["ngx-toastr", "ngx-color", "angulartics2", "rxjs"],
+      "resolutions": [
+        { "name": "ngx-toastr", "version": "19.0.1", "resolved_at": "2025-09-15T09:12:00Z" },
+        { "name": "angulartics2", "version": "14.1.0", "resolved_at": "2025-08-20T11:00:00Z" }
+      ]
+    },
+    {
+      "name": "ehr-api",
+      "kind": "api",
+      "description": "Electronic health record API — the crown jewels",
+      "deps": ["express", "jsonwebtoken", "cors", "debug", "pg", "zod"],
+      "resolutions": [
+        { "name": "debug", "version": "4.4.2", "resolved_at": "2025-09-08T14:03:00Z" },
+        { "name": "express", "version": "4.21.2", "resolved_at": "2025-09-08T14:03:00Z" }
+      ]
+    },
+    {
+      "name": "billing-service",
+      "kind": "api",
+      "description": "Claims, invoicing and payment processing",
+      "deps": ["express", "stripe", "axios", "debug"],
+      "resolutions": [
+        { "name": "debug", "version": "4.4.1", "resolved_at": "2025-09-01T10:30:00Z" }
+      ]
+    },
+    {
+      "name": "notifications-worker",
+      "kind": "worker",
+      "description": "Appointment reminders: SMS, email, push",
+      "deps": ["bullmq", "nodemailer", "debug", "ioredis"],
+      "resolutions": [
+        { "name": "debug", "version": "4.4.2", "resolved_at": "2025-09-08T15:41:00Z" }
+      ]
+    },
+    {
+      "name": "imaging-gateway",
+      "kind": "api",
+      "description": "DICOM imaging ingest and thumbnailing",
+      "deps": ["fastify", "sharp", "ws"],
+      "resolutions": []
+    },
+    {
+      "name": "auth-service",
+      "kind": "api",
+      "description": "SSO, sessions and role-based access",
+      "deps": ["express", "passport", "jsonwebtoken", "bcrypt"],
+      "resolutions": []
+    },
+    {
+      "name": "platform-cli",
+      "kind": "cli",
+      "description": "Internal deploy and ops tooling",
+      "deps": ["chalk", "commander", "inquirer", "ora"],
+      "resolutions": [
+        { "name": "chalk", "version": "5.6.1", "resolved_at": "2025-09-08T13:58:00Z" },
+        { "name": "ora", "version": "8.2.0", "resolved_at": "2025-09-08T13:58:00Z" }
+      ]
+    }
+  ]
+}

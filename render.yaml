@@ -1,0 +1,10 @@
+# Deploy Blast Radius to Render (free tier) — https://render.com
+# One-click: create a new Blueprint from this repo, or a Web Service with
+# runtime "Docker". No environment variables required.
+services:
+  - type: web
+    name: blast-radius
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    autoDeploy: true

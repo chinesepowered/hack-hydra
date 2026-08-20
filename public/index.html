@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blast Radius — supply-chain incident console</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💥</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ boot screen ============ -->
+<div id="boot" class="boot">
+  <div class="boot-inner">
+    <div class="boot-title">BLAST<span>RADIUS</span></div>
+    <div class="boot-sub">supply-chain incident console · powered by <b>HydraDB</b></div>
+    <div class="boot-log" id="bootLog"></div>
+    <div class="boot-cursor">▊</div>
+  </div>
+</div>
+
+<!-- ============ app shell ============ -->
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <div class="brand" id="brandHome" title="Back to ecosystem view">
+      <span class="brand-dot"></span>BLAST<span>RADIUS</span>
+    </div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="top-actions">
+      <div class="search-wrap">
+        <input id="search" type="text" placeholder="search package…" autocomplete="off" spellcheck="false">
+        <div id="searchResults" class="search-results hidden"></div>
+      </div>
+      <button id="lockfileBtn" class="btn btn-accent">▲ Check your lockfile</button>
+    </div>
+  </header>
+
+  <div class="alarm hidden" id="alarm"></div>
+
+  <main class="main">
+    <aside class="panel panel-left" id="leftPanel"></aside>
+
+    <section class="stage">
+      <div id="graph"></div>
+      <div class="legend" id="legend"></div>
+      <div class="stage-hint" id="stageHint"></div>
+      <div class="wave-caption hidden" id="waveCaption"></div>
+    </section>
+
+    <aside class="panel panel-right" id="rightPanel"></aside>
+  </main>
+
+  <footer class="console" id="console">
+    <div class="console-head" id="consoleHead">
+      <span class="console-title">⌁ live queries → HydraDB <span class="dim">(Bolt 7687 · OpenCypher + native path procedures)</span></span>
+      <span class="console-toggle" id="consoleToggle">▾</span>
+    </div>
+    <div class="console-body" id="consoleBody"></div>
+  </footer>
+</div>
+
+<!-- ============ package drawer ============ -->
+<div class="drawer hidden" id="drawer">
+  <div class="drawer-card" id="drawerCard"></div>
+</div>
+
+<!-- ============ lockfile modal ============ -->
+<div class="modal hidden" id="lockModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">Check your lockfile</div>
+        <div class="modal-sub">Paste or drop a <b>package-lock.json</b> (or package.json). Analyzed against three real incidents via HydraDB graph traversal. Nothing is stored.</div>
+      </div>
+      <button class="modal-close" id="lockClose">✕</button>
+    </div>
+    <div id="lockInput">
+      <div class="droptarget" id="droptarget">
+        <div class="droptarget-icon">⇪</div>
+        <div>drop <b>package-lock.json</b> here or click to browse</div>
+        <input type="file" id="fileInput" accept=".json" hidden>
+      </div>
+      <textarea id="lockText" placeholder='…or paste the JSON here'></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-accent" id="lockRun">Run blast-radius check</button>
+        <button class="btn" id="lockSample">Use a sample lockfile</button>
+      </div>
+    </div>
+    <div id="lockResults" class="hidden"></div>
+  </div>
+</div>
+
+<script src="vendor/force-graph.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

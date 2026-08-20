@@ -1,0 +1,17 @@
+{
+  "name": "blast-radius",
+  "version": "1.0.0",
+  "description": "Supply-chain incident console on HydraDB — when a package goes bad, know what it touches in seconds.",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server/index.js",
+    "build-dataset": "node scripts/build-dataset.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "neo4j-driver": "^5.28.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
