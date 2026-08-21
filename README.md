@@ -2,6 +2,10 @@
 
 **When a package goes bad, know what it touches — in seconds, not days.**
 
+**▶ Live demo: https://blast-radius-4jiw.onrender.com**  ·  [3-minute demo script](DEMO.md)
+
+> Free-tier hosting sleeps after ~15 minutes idle, so the first load may take 30–60s to wake and reseed the graph. The boot screen streams the seeding log while it does.
+
 A supply-chain incident console built on [HydraDB](https://github.com/hydra-db/hydradb) for **Hack Hydra, Track 02-A (supply chain blast radius)**. It loads a real slice of the npm ecosystem plus three real supply-chain attacks, and answers the questions that matter at 09:06 when the compromise landed at 09:00:
 
 - **Which internal services are transitively exposed?** — reverse-dependency closure, computed by HydraDB's native `algo.SSpaths` path procedure
