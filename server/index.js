@@ -65,6 +65,19 @@ async function boot() {
     note(`overview ready: ${overviewCache.nodes.length} nodes, ${overviewCache.links.length} links`);
     state.status = 'ready';
     note('console ready');
+    // Precompute every incident blast radius before traffic arrives. On a small
+    // instance the heavy closure (18 origins, ~4.7k paths) takes seconds and
+    // starves the CPU, which makes Render health checks flap; doing it once at
+    // boot means every request during a demo is a cache read.
+    for (const inc of incidentsFile.incidents) {
+      try {
+        const t = Date.now();
+        blastCache.set(inc.id, await blastRadius(inc));
+        note(`warmed blast radius: ${inc.short} (${Date.now() - t}ms)`);
+      } catch (e) {
+        note(`warm failed for ${inc.id}: ${e.message}`);
+      }
+    }
   } catch (e) {
     state.status = 'error';
     state.error = e.message;
