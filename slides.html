@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blast Radius</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💥</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0a0d14;
+  --panel:#131a28;
+  --panel-2:#1a2333;
+  --line:#26314a;
+  --ink:#eaf0fa;
+  --ink-2:#a8b6cd;
+  --muted:#7185a3;
+  --critical:#ff5d5d;
+  --critical-deep:#d03b3b;
+  --amber:#fab219;
+  --signal:#4f9df0;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- rail ---------- */
+.rail{
+  position:fixed;inset:0 0 auto 0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:clamp(14px,2vh,22px) clamp(20px,3vw,44px);
+  pointer-events:none;
+}
+.mark{
+  font-family:var(--mono);font-weight:600;font-size:clamp(11px,1.1vw,13px);
+  letter-spacing:.22em;color:var(--ink);display:flex;align-items:center;gap:9px;
+}
+.mark i{
+  width:8px;height:8px;border-radius:50%;background:var(--critical);
+  box-shadow:0 0 12px 2px rgba(255,93,93,.6);font-style:normal;
+}
+.mark span{color:var(--critical)}
+.counter{font-family:var(--mono);font-size:clamp(11px,1.1vw,13px);letter-spacing:.16em;color:var(--muted)}
+.counter b{color:var(--ink);font-weight:600}
+
+/* ---------- deck ---------- */
+.deck{
+  display:flex;height:100vh;width:100%;
+  overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  scrollbar-width:none;
+}
+.deck::-webkit-scrollbar{display:none}
+.slide{
+  position:relative;flex:0 0 100vw;width:100vw;height:100vh;
+  scroll-snap-align:start;
+  display:grid;align-content:center;
+  padding:clamp(70px,10vh,110px) clamp(24px,5.5vw,90px) clamp(56px,8vh,80px);
+  grid-template-columns:minmax(0,1fr);
+  gap:clamp(20px,3vh,34px);
+}
+@media(min-width:940px){
+  .slide{grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:clamp(32px,4vw,64px);align-items:center}
+}
+
+/* ---------- type ---------- */
+.eyebrow{
+  font-family:var(--mono);font-size:clamp(10px,1vw,12px);font-weight:600;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--critical);
+  display:flex;align-items:center;gap:10px;
+}
+.eyebrow::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--critical-deep),transparent);opacity:.5}
+h1{
+  font-family:var(--mono);font-weight:700;
+  font-size:clamp(28px,4.1vw,54px);line-height:1.06;letter-spacing:-.02em;
+  text-wrap:balance;margin:.34em 0 0;
+}
+h1 em{font-style:normal;color:var(--critical)}
+h2{
+  font-family:var(--mono);font-weight:600;
+  font-size:clamp(24px,3.4vw,46px);line-height:1.06;letter-spacing:-.015em;
+  text-wrap:balance;margin:.34em 0 0;
+}
+.lede{
+  font-size:clamp(14px,1.35vw,18px);line-height:1.6;color:var(--ink-2);
+  max-width:60ch;margin-top:clamp(14px,2vh,22px);
+}
+.lede strong{color:var(--ink);font-weight:600}
+.kicker{
+  font-family:var(--mono);font-size:clamp(12px,1.15vw,14px);color:var(--muted);
+  margin-top:clamp(16px,2.4vh,26px);line-height:1.65;
+}
+.kicker b{color:var(--amber);font-weight:600}
+.kicker code{font-family:var(--mono);color:var(--ink)}
+.kicker em{font-style:italic}
+
+/* ---------- clock (slide 1) ---------- */
+.clock{
+  display:flex;align-items:baseline;gap:clamp(10px,1.4vw,18px);
+  font-family:var(--mono);margin-top:clamp(18px,2.6vh,28px);flex-wrap:wrap;
+}
+.clock .t{font-size:clamp(26px,3.4vw,46px);font-weight:700;letter-spacing:-.02em}
+.clock .t.a{color:var(--muted)}
+.clock .t.b{color:var(--critical)}
+.clock .arr{color:var(--line);font-size:clamp(20px,2.4vw,32px)}
+.clock .q{
+  font-family:var(--sans);font-size:clamp(13px,1.3vw,17px);color:var(--ink-2);
+  flex-basis:100%;margin-top:6px;
+}
+
+/* ---------- stat grid ---------- */
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.1vw,14px)}
+.stats.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stat{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:clamp(12px,1.6vw,20px);
+}
+.stat .n{
+  font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums;
+  font-size:clamp(20px,2.5vw,34px);line-height:1.05;letter-spacing:-.02em;
+}
+.stat .n.crit{color:var(--critical)}
+.stat .n.amber{color:var(--amber)}
+.stat .n.sig{color:var(--signal)}
+.stat .l{
+  font-family:var(--mono);font-size:clamp(9px,.82vw,11px);letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);margin-top:7px;line-height:1.45;
+}
+
+/* ---------- evidence panel ---------- */
+.evidence{
+  position:relative;border:1px solid var(--line);border-radius:12px;
+  overflow:hidden;background:var(--panel);
+  box-shadow:0 24px 70px rgba(0,0,0,.55);
+}
+.evidence img{display:block;width:100%;height:auto}
+.evidence figcaption{
+  font-family:var(--mono);font-size:clamp(9.5px,.85vw,11.5px);color:var(--muted);
+  padding:9px 13px;border-top:1px solid var(--line);background:var(--panel-2);
+  letter-spacing:.05em;
+}
+
+/* ---------- capability list ---------- */
+.caps{display:grid;gap:clamp(7px,1vh,11px);margin-top:clamp(14px,2vh,20px)}
+.cap{
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;
+  padding:clamp(9px,1.2vh,13px) clamp(11px,1.3vw,15px);
+  background:var(--panel);border:1px solid var(--line);
+  border-left:2px solid var(--amber);border-radius:0 9px 9px 0;
+}
+.cap:nth-child(1){border-left-color:var(--critical)}
+.cap:nth-child(3){border-left-color:var(--signal)}
+.cap .ico{font-size:clamp(13px,1.3vw,16px);line-height:1.35}
+.cap .tx{font-size:clamp(12px,1.15vw,14.5px);line-height:1.5;color:var(--ink-2)}
+.cap .tx b{color:var(--ink);font-weight:600}
+.cap code{
+  font-family:var(--mono);font-size:.9em;color:var(--amber);
+  background:rgba(250,178,25,.09);padding:1px 5px;border-radius:4px;
+}
+
+/* ---------- query proof ---------- */
+.query{
+  background:#070a10;border:1px solid var(--line);border-radius:10px;
+  padding:clamp(12px,1.6vw,18px);font-family:var(--mono);
+  font-size:clamp(9.5px,.92vw,12.5px);line-height:1.75;overflow-x:auto;white-space:pre;
+}
+.query .kw{color:var(--signal)}
+.query .proc{color:#c79bff}
+.query .str{color:var(--amber)}
+.query .cm{color:var(--muted)}
+.query .out{color:#3fc46b}
+
+/* ---------- canvas backdrop ---------- */
+#rings{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.5;pointer-events:none}
+.slide > *{position:relative;z-index:1}
+
+/* ---------- footer nav ---------- */
+.nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:clamp(12px,2vh,20px) clamp(20px,3vw,44px);
+}
+.dots{display:flex;gap:8px;pointer-events:auto}
+.dot{
+  width:26px;height:3px;border-radius:2px;background:var(--line);border:0;padding:0;
+  cursor:pointer;transition:background .2s;
+}
+.dot[aria-current="true"]{background:var(--critical)}
+.dot:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+.hint{font-family:var(--mono);font-size:clamp(9.5px,.85vw,11px);letter-spacing:.13em;color:var(--muted)}
+.hint kbd{
+  font-family:var(--mono);border:1px solid var(--line);border-radius:4px;
+  padding:1px 5px;color:var(--ink-2);
+}
+.url{
+  font-family:var(--mono);font-size:clamp(11px,1.2vw,15px);color:var(--signal);
+  text-decoration:none;border-bottom:1px solid rgba(79,157,240,.35);padding-bottom:2px;
+}
+.url:hover{border-bottom-color:var(--signal)}
+
+@media (prefers-reduced-motion:reduce){
+  .deck{scroll-behavior:auto}
+  #rings{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="rail">
+  <div class="mark"><i></i>BLAST <span>RADIUS</span></div>
+  <div class="counter"><b id="cur">01</b> / 03</div>
+</header>
+
+<main class="deck" id="deck">
+
+  <!-- ============ 1. the problem ============ -->
+  <section class="slide" id="s1">
+    <canvas id="rings"></canvas>
+    <div>
+      <div class="eyebrow">The defender&#39;s problem is speed</div>
+      <h1>A package is compromised at 09:00.<br><em>Who&#39;s exposed by 09:06?</em></h1>
+
+      <p class="lede">Six minutes is not a hypothetical — that is how long the TanStack worm took to publish <strong>84 malicious artifacts across 42 packages</strong> through a compromised release pipeline.</p>
+
+      <p class="kicker">
+        Answering it means a <b>transitive reverse-dependency closure</b> over a versioned
+        ecosystem graph. A vector index cannot answer it at all: packages <em>semantically near</em>
+        <code>chalk</code> are not the packages that <em>transitively depend on</em> it —
+        and only the second set gets you breached.
+      </p>
+    </div>
+
+    <div>
+      <div class="stats three">
+        <div class="stat"><div class="n crit">84</div><div class="l">malicious artifacts</div></div>
+        <div class="stat"><div class="n crit">42</div><div class="l">packages</div></div>
+        <div class="stat"><div class="n crit">6 min</div><div class="l">to publish them all</div></div>
+      </div>
+      <div class="stats" style="margin-top:clamp(8px,1.1vw,14px)">
+        <div class="stat"><div class="n amber">2.6B</div><div class="l">weekly downloads under the chalk/debug takeover</div></div>
+        <div class="stat"><div class="n amber">500+</div><div class="l">packages hit by the first self-propagating npm worm</div></div>
+      </div>
+      <p class="kicker" style="margin-top:clamp(12px,1.8vh,18px)">
+        Three real attacks — TanStack (CVE-2026-45321), chalk/debug, Shai-Hulud —
+        loaded from public advisories, every source cited in the repo.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 2. what we built ============ -->
+  <section class="slide" id="s2">
+    <div>
+      <div class="eyebrow">What we built</div>
+      <h2>An incident console<br>on a live graph.</h2>
+      <p class="lede">
+        Pick an attack. A shockwave propagates outward through the <strong>real npm
+        dependency graph</strong>, ring by ring, lighting up every downstream package and
+        every internal service it reaches — while the panels fill in who got hit,
+        when, and through which chain.
+      </p>
+
+      <div class="caps">
+        <div class="cap">
+          <span class="ico">💥</span>
+          <span class="tx"><b>Blast radius</b> — reverse closure via <code>algo.SSpaths</code> with <code>relDirection:'incoming'</code>, whole paths returned</span>
+        </div>
+        <div class="cap">
+          <span class="ico">⏱️</span>
+          <span class="tx"><b>Who installed it while it was live</b> — <code>RESOLVED</code> edges with timestamps, checked against each attack's publish window</span>
+        </div>
+        <div class="cap">
+          <span class="ico">👤</span>
+          <span class="tx"><b>Shared-maintainer surface</b> — two-hop <code>MAINTAINS</code> traversal: what else can that account push to?</span>
+        </div>
+        <div class="cap">
+          <span class="ico">📤</span>
+          <span class="tx"><b>Bring your own lockfile</b> — drop a <code>package-lock.json</code> in and it traverses <em>your</em> dependencies, in under a second</span>
+        </div>
+      </div>
+    </div>
+
+    <figure class="evidence">
+      <img src="docs/blast-chalk-debug.png" alt="The chalk/debug blast radius: concentric hop rings around 18 compromised origin packages, with exposed internal services highlighted in red and the live HydraDB query console along the bottom.">
+      <figcaption>chalk/debug, 2025-09-08 — 163 packages, 6 of 9 services exposed, 3 hit inside the live window</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 3. proof ============ -->
+  <section class="slide" id="s3">
+    <div>
+      <div class="eyebrow">Built on HydraDB</div>
+      <h2>Every answer is<br>a graph traversal.</h2>
+      <p class="lede">
+        Nothing is precomputed at build time. The console streams the actual Cypher
+        as it executes — this is the query behind the headline number:
+      </p>
+
+      <div class="query" style="margin-top:clamp(14px,2vh,20px)">
+<span class="cm">// reverse-dependency closure, one call per compromised package</span>
+<span class="kw">CALL</span> <span class="proc">algo.SSpaths</span>({
+  sourceNode: $src,
+  relTypes: [<span class="str">'DEPENDS_ON'</span>],
+  relDirection: <span class="str">'incoming'</span>,
+  maxLen: <span class="str">6</span>, pathCount: <span class="str">4000</span>
+}) <span class="kw">YIELD</span> path <span class="kw">RETURN</span> path
+<span class="out">→ 4,759 paths · 163 packages · 6 services · 37 calls</span>
+      </div>
+
+      <p class="kicker">
+        Paths come back <b>shortest-first under a global cap</b>, so hop distance —
+        the rings you see on screen — falls out of first-visit order for free.
+      </p>
+    </div>
+
+    <div>
+      <div class="stats">
+        <div class="stat"><div class="n sig">3,115</div><div class="l">nodes / 9,149 edges seeded in 2.5s</div></div>
+        <div class="stat"><div class="n sig">1,748</div><div class="l">real packages crawled from npm</div></div>
+        <div class="stat"><div class="n amber">5.80B</div><div class="l">weekly downloads downstream of one compromise</div></div>
+        <div class="stat"><div class="n crit">0.13s</div><div class="l">to map a full blast radius</div></div>
+      </div>
+
+      <p class="kicker">
+        HydraDB and the console run <b>in one container inside a 512MB free tier</b> —
+        105MB at boot. The graph reseeds itself on every cold start, so the
+        deployment has no external database and no persistent disk.
+      </p>
+
+      <p style="margin-top:clamp(16px,2.4vh,26px)">
+        <a class="url" href="https://blast-radius-4jiw.onrender.com" target="_blank" rel="noopener">blast-radius-4jiw.onrender.com</a>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<nav class="nav">
+  <div class="dots" id="dots"></div>
+  <div class="hint"><kbd>←</kbd> <kbd>→</kbd> TO NAVIGATE</div>
+</nav>
+
+<script>
+(function(){
+  var deck=document.getElementById('deck');
+  var slides=[].slice.call(deck.querySelectorAll('.slide'));
+  var dots=document.getElementById('dots');
+  var cur=document.getElementById('cur');
+  var idx=0;
+
+  slides.forEach(function(s,i){
+    var b=document.createElement('button');
+    b.className='dot';
+    b.setAttribute('aria-label','Go to slide '+(i+1));
+    b.setAttribute('aria-current',i===0?'true':'false');
+    b.addEventListener('click',function(){go(i);});
+    dots.appendChild(b);
+  });
+
+  function go(i){
+    idx=Math.max(0,Math.min(slides.length-1,i));
+    deck.scrollTo({left:idx*window.innerWidth,behavior:'smooth'});
+    sync();
+  }
+  function sync(){
+    cur.textContent=String(idx+1).padStart(2,'0');
+    [].slice.call(dots.children).forEach(function(d,i){
+      d.setAttribute('aria-current',i===idx?'true':'false');
+    });
+  }
+  deck.addEventListener('scroll',function(){
+    var i=Math.round(deck.scrollLeft/window.innerWidth);
+    if(i!==idx){idx=i;sync();}
+  },{passive:true});
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(idx+1);}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(idx-1);}
+    else if(e.key==='Home'){e.preventDefault();go(0);}
+    else if(e.key==='End'){e.preventDefault();go(slides.length-1);}
+    else if(e.key>='1'&&e.key<='3'){e.preventDefault();go(+e.key-1);}
+  });
+  window.addEventListener('resize',function(){deck.scrollTo({left:idx*window.innerWidth,behavior:'auto'});});
+
+  // --- blast rings behind slide 1 ---
+  var c=document.getElementById('rings');
+  if(c&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    var ctx=c.getContext('2d'),W=0,H=0,t0=performance.now();
+    function size(){
+      var r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;
+      W=r.width;H=r.height;c.width=W*d;c.height=H*d;ctx.setTransform(d,0,0,d,0,0);
+    }
+    size();window.addEventListener('resize',size);
+    (function draw(now){
+      ctx.clearRect(0,0,W,H);
+      var cx=W*0.5,cy=H*0.52,max=Math.sqrt(cx*cx+cy*cy)*1.05;
+      var el=(now-t0)/1000;
+      for(var k=0;k<4;k++){
+        var p=((el*0.16)+k/4)%1;
+        var r=p*max;
+        if(r<2)continue;
+        ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+        ctx.strokeStyle='rgba(255,93,93,'+(0.22*(1-p)*(1-p)).toFixed(3)+')';
+        ctx.lineWidth=1.2;ctx.stroke();
+      }
+      requestAnimationFrame(draw);
+    })(t0);
+  }
+})();
+</script>
+</body>
+</html>
