@@ -7,11 +7,7 @@
 FROM node:22-slim AS nodedeps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-# The optional npmcafile secret lets corporate/CI proxies with TLS inspection
-# build this image; on Render (no secret) it is a no-op.
-RUN --mount=type=secret,id=npmcafile \
-    sh -c 'if [ -s /run/secrets/npmcafile ]; then npm config set cafile /run/secrets/npmcafile; fi; \
-           npm install --omit=dev --no-audit --no-fund'
+RUN npm install --omit=dev --no-audit --no-fund
 
 # --- stage 2: HydraDB image is the base; add node + the app
 FROM ghcr.io/hydra-db/hydradb:latest
